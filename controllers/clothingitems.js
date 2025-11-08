@@ -1,5 +1,5 @@
-const ClothingItem = require("../models/ClothingItem.js");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors.js");
+const ClothingItem = require("../models/ClothingItem");
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
 
 const getItems = async (req, res) => {
   try {
