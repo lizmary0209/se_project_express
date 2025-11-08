@@ -1,13 +1,12 @@
-const ClothingItem = require("../models/ClothingItem");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const ClothingItem = require("../models/ClothingItem.js");
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors.js");
 
 const getItems = async (req, res) => {
   try {
     const items = await ClothingItem.find({});
-    res.json(items);
+    return res.json(items);
   } catch (err) {
-    console.error(err);
-    res
+    return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server" });
   }
@@ -25,15 +24,13 @@ const createItem = async (req, res) => {
 
   try {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
-    res.status(201).json(item);
+    return res.status(201).json(item);
   } catch (err) {
-    console.error(err);
-
     if (err.name === "ValidationError") {
       return res.status(BAD_REQUEST).json({ message: "Invalid data provided" });
     }
 
-    res
+    return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server" });
   }
@@ -49,10 +46,8 @@ const deleteItem = async (req, res) => {
     });
 
     await item.deleteOne();
-    res.json({ message: "Item deleted successfully" });
+    return res.json({ message: "Item deleted successfully" });
   } catch (err) {
-    console.error(err);
-
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
       return res.status(NOT_FOUND).json({ message: err.message });
     }
@@ -61,7 +56,7 @@ const deleteItem = async (req, res) => {
       return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
     }
 
-    res
+    return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server" });
   }
@@ -79,10 +74,8 @@ const likeItem = async (req, res) => {
       throw error;
     });
 
-    res.json(item);
+    return res.json(item);
   } catch (err) {
-    console.error(err);
-
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
       return res.status(NOT_FOUND).json({ message: err.message });
     }
@@ -91,7 +84,7 @@ const likeItem = async (req, res) => {
       return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
     }
 
-    res
+    return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server" });
   }
@@ -109,10 +102,8 @@ const dislikeItem = async (req, res) => {
       throw error;
     });
 
-    res.json(item);
+    return res.json(item);
   } catch (err) {
-    console.error(err);
-
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
       return res.status(NOT_FOUND).json({ message: err.message });
     }
@@ -121,7 +112,7 @@ const dislikeItem = async (req, res) => {
       return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
     }
 
-    res
+    return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server" });
   }

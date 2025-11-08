@@ -7,13 +7,7 @@ const itemsRouter = require("./routes/clothingitems");
 const { PORT = 3001 } = process.env;
 const app = express();
 
-mongoose
-  .connect("mongodb://127.0.0.1:27017/wtwr_db", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
 app.use(express.json());
 
@@ -31,6 +25,4 @@ app.use((req, res) => {
   res.status(404).send({ message: "Requested resource not found" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT);
