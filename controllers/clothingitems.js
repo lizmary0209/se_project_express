@@ -1,4 +1,4 @@
-const ClothingItem = require("../models/ClothingItem");
+const ClothingItem = require("../models/clothingitem");
 const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
 
 const getItems = async (req, res) => {
