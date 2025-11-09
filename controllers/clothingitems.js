@@ -37,9 +37,9 @@ const createItem = async (req, res) => {
 };
 
 const deleteItem = async (req, res) => {
-  const { itemId } = req.params;
+  const { id } = req.params;
   try {
-    const item = await ClothingItem.findByIdAndDelete(itemId).orFail(() => {
+    const item = await ClothingItem.findByIdAndDelete(id).orFail(() => {
       const error = new Error("Item not found");
       error.status = NOT_FOUND;
       throw error;
@@ -65,7 +65,7 @@ const deleteItem = async (req, res) => {
 const likeItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndUpdate(
-      req.params.itemId,
+      req.params.id,
       { $addToSet: { likes: req.user._id } },
       { new: true, runValidators: true }
     ).orFail(() => {
@@ -93,7 +93,7 @@ const likeItem = async (req, res) => {
 const dislikeItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndUpdate(
-      req.params.itemId,
+      req.params.id,
       { $pull: { likes: req.user._id } },
       { new: true, runValidators: true }
     ).orFail(() => {
