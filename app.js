@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const usersRouter = require("./routes/users");
 const itemsRouter = require("./routes/clothingitems");
 
+const { NOT_FOUND } = require("./utils/errors");
+
 const { PORT = 3001 } = process.env;
 const app = express();
 
