@@ -22,7 +22,7 @@ app.use("/users", usersRouter);
 app.use("/items", itemsRouter);
 
 app.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 
 app.listen(PORT);

@@ -49,11 +49,11 @@ const deleteItem = async (req, res) => {
     return res.json({ message: "Item deleted successfully" });
   } catch (err) {
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: err.message });
+      return res.status(NOT_FOUND).json({ message: "Item not found" });
     }
 
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+      return res.status(BAD_REQUEST).json({ message: "Invalid data" });
     }
 
     return res

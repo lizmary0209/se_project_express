@@ -23,11 +23,11 @@ const getUser = async (req, res) => {
     return res.json(user);
   } catch (err) {
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
+      return res.status(BAD_REQUEST).json({ message: "Invalid data" });
     }
 
     if (err.name === "DocumentNotFoundError" || err.statusCode === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: err.message });
+      return res.status(NOT_FOUND).json({ message: "User not found" });
     }
 
     return res
