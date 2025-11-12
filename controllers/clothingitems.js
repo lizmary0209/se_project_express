@@ -77,7 +77,9 @@ const likeItem = async (req, res) => {
     return res.json(item);
   } catch (err) {
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: err.message });
+      return res
+        .status(NOT_FOUND)
+        .json({ message: "The requested resource could not be found" });
     }
 
     if (err.name === "CastError") {
@@ -105,7 +107,9 @@ const dislikeItem = async (req, res) => {
     return res.json(item);
   } catch (err) {
     if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: err.message });
+      return res
+        .status(NOT_FOUND)
+        .json({ message: "The requested resource could not be found" });
     }
 
     if (err.name === "CastError") {
