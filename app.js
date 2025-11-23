@@ -4,7 +4,6 @@ const cors = require("cors");
 
 const usersRouter = require("./routes/users");
 const itemsRouter = require("./routes/clothingitems");
-const auth = require("./middlewares/auth");
 const errorHandler = require("./middlewares/errors");
 
 const { NOT_FOUND } = require("./utils/errors");
@@ -18,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/users", usersRouter);
-app.use("/items", auth, itemsRouter);
+app.use("/items", itemsRouter);
 
 app.use((req, res) => {
   res.status(NOT_FOUND).json({ message: "Requested resource not found" });

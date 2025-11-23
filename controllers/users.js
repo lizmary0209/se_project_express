@@ -7,6 +7,8 @@ const {
   NOT_FOUND,
   UNAUTHORIZED,
   CONFLICT,
+  handleCastError,
+  handleNotFound,
 } = require("../utils/errors");
 
 const login = async (req, res, next) => {
@@ -23,30 +25,17 @@ const login = async (req, res, next) => {
   }
 };
 
-const getUsers = async (req, res, next) => {
+const getCurrentUser = async (req, res, next) => {
   try {
-    const users = await User.find({});
-    res.json(users);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getUser = async (req, res, next) => {
-  const { userId } = req.params;
-
-  try {
-    const user = await User.findById(userId).orFail(() => {
+    const user = await User.findById(req.user._id).orFail(() => {
       const error = new Error("User not found");
       error.status = NOT_FOUND;
       throw error;
     });
     res.json(user);
   } catch (err) {
-    if (err.name === "CastError") {
-      err.status = BAD_REQUEST;
-      err.message = "Invalid user ID";
-    }
+    handleCastError(err, "user");
+    handleNotFound(err, "User");
     next(err);
   }
 };
@@ -79,19 +68,6 @@ const createUser = async (req, res, next) => {
   }
 };
 
-const getCurrentUser = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user._id).orFail(() => {
-      const error = new Error("User not found");
-      error.status = NOT_FOUND;
-      throw error;
-    });
-    res.json(user);
-  } catch (err) {
-    next(err);
-  }
-};
-
 const updateUser = async (req, res, next) => {
   const { name, avatar } = req.body;
 
@@ -112,14 +88,14 @@ const updateUser = async (req, res, next) => {
       err.status = BAD_REQUEST;
       err.message = "Invalid data";
     }
+    handleCastError(err, "user");
+    handleNotFound(err, "User");
     next(err);
   }
 };
 
 module.exports = {
   login,
-  getUsers,
-  getUser,
   createUser,
   getCurrentUser,
   updateUser,

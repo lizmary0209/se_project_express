@@ -1,5 +1,10 @@
 const ClothingItem = require("../models/clothingitem");
-const { BAD_REQUEST, NOT_FOUND } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  handleCastError,
+  handleNotFound,
+} = require("../utils/errors");
 
 module.exports.getItems = async (req, res, next) => {
   try {
@@ -44,10 +49,8 @@ module.exports.deleteItem = async (req, res, next) => {
     await item.deleteOne();
     res.send({ message: "Item deleted successfully" });
   } catch (err) {
-    if (err.name === "CastError") {
-      err.status = BAD_REQUEST;
-      err.message = "Invalid item ID";
-    }
+    handleCastError(err, "item");
+    handleNotFound(err, "Item");
     next(err);
   }
 };
@@ -68,10 +71,8 @@ module.exports.likeItem = async (req, res, next) => {
 
     res.send(item);
   } catch (err) {
-    if (err.name === "CastError") {
-      err.status = BAD_REQUEST;
-      err.message = "Invalid item ID";
-    }
+    handleCastError(err, "item");
+    handleNotFound(err, "Item");
     next(err);
   }
 };
@@ -92,10 +93,8 @@ module.exports.dislikeItem = async (req, res, next) => {
 
     res.send(item);
   } catch (err) {
-    if (err.name === "CastError") {
-      err.status = BAD_REQUEST;
-      err.message = "Invalid item ID";
-    }
+    handleCastError(err, "item");
+    handleNotFound(err, "Item");
     next(err);
   }
 };
