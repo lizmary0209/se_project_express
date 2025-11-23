@@ -11,8 +11,11 @@ const SERVER_ERROR = 500;
  */
 function handleCastError(err, resourceName = "Resource") {
   if (err.name === "CastError") {
-    err.status = BAD_REQUEST;
-    err.message = `Invalid ${resourceName} ID`;
+    return {
+      ...err,
+      status: BAD_REQUEST,
+      message: `Invalid ${resourceName} ID`,
+    };
   }
   return err;
 }
@@ -24,10 +27,14 @@ function handleCastError(err, resourceName = "Resource") {
  */
 function handleNotFound(err, resourceName = "Resource") {
   if (!err.status || err.status === SERVER_ERROR) {
-    err.status = NOT_FOUND;
-    if (!err.message || err.message === "Resource not found") {
-      err.message = `${resourceName} not found`;
-    }
+    return {
+      ...err,
+      status: NOT_FOUND,
+      message:
+        err.message && err.message !== "Resource not found"
+          ? err.message
+          : `${resourceName} not found`,
+    };
   }
   return err;
 }
