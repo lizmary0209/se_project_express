@@ -1,125 +1,101 @@
 const ClothingItem = require("../models/clothingitem");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const { BAD_REQUEST, NOT_FOUND } = require("../utils/errors");
 
-const getItems = async (req, res) => {
+module.exports.getItems = async (req, res, next) => {
   try {
     const items = await ClothingItem.find({});
-    return res.json(items);
+    res.send(items);
   } catch (err) {
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-const createItem = async (req, res) => {
+module.exports.createItem = async (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  if (!owner) {
-    return res
-      .status(BAD_REQUEST)
-      .json({ message: "User information is missing" });
-  }
-
   try {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
-    return res.status(201).json(item);
+    res.status(201).send(item);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid data provided" });
+      err.status = BAD_REQUEST;
     }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-const deleteItem = async (req, res) => {
+module.exports.deleteItem = async (req, res, next) => {
   const { id } = req.params;
+
   try {
-    const item = await ClothingItem.findByIdAndDelete(id).orFail(() => {
+    const item = await ClothingItem.findById(id).orFail(() => {
       const error = new Error("Item not found");
       error.status = NOT_FOUND;
       throw error;
     });
+
+    if (String(item.owner) !== String(req.user._id)) {
+      const error = new Error("You cannot delete someone else's item");
+      error.status = 403;
+      throw error;
+    }
 
     await item.deleteOne();
-    return res.json({ message: "Item deleted successfully" });
+    res.send({ message: "Item deleted successfully" });
   } catch (err) {
-    if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: "Item not found" });
-    }
-
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid data" });
+      err.status = BAD_REQUEST;
+      err.message = "Invalid item ID";
     }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-const likeItem = async (req, res) => {
+module.exports.likeItem = async (req, res, next) => {
+  const { id } = req.params;
+
   try {
     const item = await ClothingItem.findByIdAndUpdate(
-      req.params.id,
+      id,
       { $addToSet: { likes: req.user._id } },
-      { new: true, runValidators: true }
+      { new: true }
     ).orFail(() => {
       const error = new Error("Item not found");
       error.status = NOT_FOUND;
       throw error;
     });
 
-    return res.json(item);
+    res.send(item);
   } catch (err) {
-    if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res
-        .status(NOT_FOUND)
-        .json({ message: "The requested resource could not be found" });
-    }
-
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+      err.status = BAD_REQUEST;
+      err.message = "Invalid item ID";
     }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-const dislikeItem = async (req, res) => {
+module.exports.dislikeItem = async (req, res, next) => {
+  const { id } = req.params;
+
   try {
     const item = await ClothingItem.findByIdAndUpdate(
-      req.params.id,
+      id,
       { $pull: { likes: req.user._id } },
-      { new: true, runValidators: true }
+      { new: true }
     ).orFail(() => {
       const error = new Error("Item not found");
       error.status = NOT_FOUND;
       throw error;
     });
 
-    return res.json(item);
+    res.send(item);
   } catch (err) {
-    if (err.name === "DocumentNotFoundError" || err.status === NOT_FOUND) {
-      return res
-        .status(NOT_FOUND)
-        .json({ message: "The requested resource could not be found" });
-    }
-
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+      err.status = BAD_REQUEST;
+      err.message = "Invalid item ID";
     }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
-
-module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };

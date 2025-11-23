@@ -1,55 +1,126 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  UNAUTHORIZED,
+  CONFLICT,
+} = require("../utils/errors");
 
-const getUsers = async (req, res) => {
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+
   try {
-    const users = await User.find({});
-    return res.json(users);
+    const user = await User.findByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+    res.json({ token });
   } catch (err) {
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    err.status = UNAUTHORIZED;
+    err.message = "Invalid email or password";
+    next(err);
   }
 };
 
-const getUser = async (req, res) => {
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getUser = async (req, res, next) => {
   const { userId } = req.params;
+
   try {
     const user = await User.findById(userId).orFail(() => {
       const error = new Error("User not found");
-      error.statusCode = NOT_FOUND;
+      error.status = NOT_FOUND;
       throw error;
     });
-    return res.json(user);
+    res.json(user);
   } catch (err) {
     if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid data" });
+      err.status = BAD_REQUEST;
+      err.message = "Invalid user ID";
     }
-
-    if (err.name === "DocumentNotFoundError" || err.statusCode === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: "User not found" });
-    }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-const createUser = async (req, res) => {
-  const { name, avatar } = req.body;
+const createUser = async (req, res, next) => {
+  const { name, email, password, avatar } = req.body;
+
   try {
-    const user = await User.create({ name, avatar });
-    return res.status(201).json(user);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      avatar,
+    });
+
+    const response = user.toObject();
+    delete response.password;
+
+    res.status(201).json(response);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid data provided" });
+      err.status = BAD_REQUEST;
+      err.message = "Invalid data provided";
+    } else if (err.code === 11000) {
+      err.status = CONFLICT;
+      err.message = "Email already exists";
     }
-
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "An error has occurred on the server" });
+    next(err);
   }
 };
 
-module.exports = { getUsers, getUser, createUser };
+const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).orFail(() => {
+      const error = new Error("User not found");
+      error.status = NOT_FOUND;
+      throw error;
+    });
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  const { name, avatar } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, avatar },
+      { new: true, runValidators: true }
+    ).orFail(() => {
+      const error = new Error("User not found");
+      error.status = NOT_FOUND;
+      throw error;
+    });
+
+    res.json(user);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      err.status = BAD_REQUEST;
+      err.message = "Invalid data";
+    }
+    next(err);
+  }
+};
+
+module.exports = {
+  login,
+  getUsers,
+  getUser,
+  createUser,
+  getCurrentUser,
+  updateUser,
+};
