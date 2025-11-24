@@ -14,6 +14,12 @@ const {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    const err = new Error("Email and password are required");
+    err.status = BAD_REQUEST;
+    return next(err);
+  }
+
   try {
     const user = await User.findByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
@@ -55,15 +61,15 @@ const createUser = async (req, res, next) => {
     const response = user.toObject();
     delete response.password;
 
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      err.status = BAD_REQUEST;
-      err.message = "Invalid data provided";
-    } else if (err.code === 11000) {
-      err.status = CONFLICT;
-      err.message = "Email already exists";
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "Email already exists" });
     }
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ message: "Invalid data provided" });
+    }
+
     next(err);
   }
 };

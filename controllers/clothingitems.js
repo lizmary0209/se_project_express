@@ -6,31 +6,32 @@ const {
   handleNotFound,
 } = require("../utils/errors");
 
-module.exports.getItems = async (req, res, next) => {
+const getItems = async (req, res, next) => {
   try {
     const items = await ClothingItem.find({});
-    res.send(items);
+    res.json(items);
   } catch (err) {
     next(err);
   }
 };
 
-module.exports.createItem = async (req, res, next) => {
+const createItem = async (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   try {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
-    res.status(201).send(item);
+    res.status(201).json(item);
   } catch (err) {
     if (err.name === "ValidationError") {
       err.status = BAD_REQUEST;
+      err.message = "Invalid data provided";
     }
     next(err);
   }
 };
 
-module.exports.deleteItem = async (req, res, next) => {
+const deleteItem = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -41,13 +42,13 @@ module.exports.deleteItem = async (req, res, next) => {
     });
 
     if (String(item.owner) !== String(req.user._id)) {
-      const error = new Error("You cannot delete someone else's item");
-      error.status = 403;
-      throw error;
+      return res
+        .status(403)
+        .json({ message: "You cannot delete someone else's item" });
     }
 
     await item.deleteOne();
-    res.send({ message: "Item deleted successfully" });
+    res.json({ message: "Item deleted successfully" });
   } catch (err) {
     handleCastError(err, "item");
     handleNotFound(err, "Item");
@@ -55,7 +56,7 @@ module.exports.deleteItem = async (req, res, next) => {
   }
 };
 
-module.exports.likeItem = async (req, res, next) => {
+const likeItem = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -69,7 +70,7 @@ module.exports.likeItem = async (req, res, next) => {
       throw error;
     });
 
-    res.send(item);
+    res.json(item);
   } catch (err) {
     handleCastError(err, "item");
     handleNotFound(err, "Item");
@@ -77,7 +78,7 @@ module.exports.likeItem = async (req, res, next) => {
   }
 };
 
-module.exports.dislikeItem = async (req, res, next) => {
+const dislikeItem = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -91,10 +92,18 @@ module.exports.dislikeItem = async (req, res, next) => {
       throw error;
     });
 
-    res.send(item);
+    res.json(item);
   } catch (err) {
     handleCastError(err, "item");
     handleNotFound(err, "Item");
     next(err);
   }
+};
+
+module.exports = {
+  getItems,
+  createItem,
+  deleteItem,
+  likeItem,
+  dislikeItem,
 };
