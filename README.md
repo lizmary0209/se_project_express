@@ -95,6 +95,10 @@ dotenv for environment configuration.
 
 Validator.js for validating user input (e.g., URLs).
 
+## Links
+
+Sprint 13 Video https://drive.google.com/file/d/19mHliSHrfSh9bdEwX2dx-skMy3phpOLK/view?usp=sharing
+
 ## Technologies and Techniques Used
 
 Technologies and Techniques Used
