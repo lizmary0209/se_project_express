@@ -16,11 +16,11 @@ const auth = (req, res, next) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
     const error = new Error("Authorization required");
     error.status = UNAUTHORIZED;
-    next(error);
+    return next(error);
   }
 };
 

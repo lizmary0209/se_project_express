@@ -23,11 +23,11 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token });
+    return res.json({ token });
   } catch (err) {
     err.status = UNAUTHORIZED;
     err.message = "Invalid email or password";
-    next(err);
+    return next(err);
   }
 };
 
@@ -38,11 +38,11 @@ const getCurrentUser = async (req, res, next) => {
       error.status = NOT_FOUND;
       throw error;
     });
-    res.json(user);
+    return res.json(user);
   } catch (err) {
     handleCastError(err, "user");
     handleNotFound(err, "User");
-    next(err);
+    return next(err);
   }
 };
 
@@ -64,13 +64,13 @@ const createUser = async (req, res, next) => {
     return res.status(201).json(response);
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(409).json({ message: "Email already exists" });
+      return res.status(CONFLICT).json({ message: "Email already exists" });
     }
     if (err.name === "ValidationError") {
-      return res.status(400).json({ message: "Invalid data provided" });
+      return res.status(BAD_REQUEST).json({ message: "Invalid data provided" });
     }
 
-    next(err);
+    return next(err);
   }
 };
 
@@ -88,7 +88,7 @@ const updateUser = async (req, res, next) => {
       throw error;
     });
 
-    res.json(user);
+    return res.json(user);
   } catch (err) {
     if (err.name === "ValidationError") {
       err.status = BAD_REQUEST;
@@ -96,7 +96,7 @@ const updateUser = async (req, res, next) => {
     }
     handleCastError(err, "user");
     handleNotFound(err, "User");
-    next(err);
+    return next(err);
   }
 };
 

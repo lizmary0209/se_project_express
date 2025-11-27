@@ -2,6 +2,7 @@ const ClothingItem = require("../models/clothingitem");
 const {
   BAD_REQUEST,
   NOT_FOUND,
+  FORBIDDEN,
   handleCastError,
   handleNotFound,
 } = require("../utils/errors");
@@ -9,9 +10,9 @@ const {
 const getItems = async (req, res, next) => {
   try {
     const items = await ClothingItem.find({});
-    res.json(items);
+    return res.json(items);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -21,13 +22,13 @@ const createItem = async (req, res, next) => {
 
   try {
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
-    res.status(201).json(item);
+    return res.status(201).json(item);
   } catch (err) {
     if (err.name === "ValidationError") {
       err.status = BAD_REQUEST;
       err.message = "Invalid data provided";
     }
-    next(err);
+    return next(err);
   }
 };
 
@@ -43,16 +44,16 @@ const deleteItem = async (req, res, next) => {
 
     if (String(item.owner) !== String(req.user._id)) {
       return res
-        .status(403)
+        .status(FORBIDDEN)
         .json({ message: "You cannot delete someone else's item" });
     }
 
     await item.deleteOne();
-    res.json({ message: "Item deleted successfully" });
+    return res.json({ message: "Item deleted successfully" });
   } catch (err) {
-    handleCastError(err, "item");
-    handleNotFound(err, "Item");
-    next(err);
+    return next(
+      handleCastError(err, "item") || handleNotFound(err, "Item") || err
+    );
   }
 };
 
@@ -70,11 +71,11 @@ const likeItem = async (req, res, next) => {
       throw error;
     });
 
-    res.json(item);
+    return res.json(item);
   } catch (err) {
-    handleCastError(err, "item");
-    handleNotFound(err, "Item");
-    next(err);
+    return next(
+      handleCastError(err, "item") || handleNotFound(err, "Item") || err
+    );
   }
 };
 
@@ -92,11 +93,11 @@ const dislikeItem = async (req, res, next) => {
       throw error;
     });
 
-    res.json(item);
+    return res.json(item);
   } catch (err) {
-    handleCastError(err, "item");
-    handleNotFound(err, "Item");
-    next(err);
+    return next(
+      handleCastError(err, "item") || handleNotFound(err, "Item") || err
+    );
   }
 };
 

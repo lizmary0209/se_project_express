@@ -2,9 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/users");
 const itemsRouter = require("./routes/clothingitems");
 const errorHandler = require("./middlewares/errors");
+const { NOT_FOUND } = require("./utils/errors");
 
 const { PORT = 3001 } = process.env;
 const app = express();
@@ -14,19 +16,13 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db").catch(() => {});
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  if (!req.user) {
-    req.user = { _id: "69238ae7fe791ebc0d74b671" };
-  }
-  next();
-});
-
+app.use("/", authRouter);
 app.use("/users", usersRouter);
 app.use("/items", itemsRouter);
 
-app.use((req, res, next) => {
-  res.status(404).json({ message: "Requested resource not found" });
-});
+app.use((req, res) =>
+  res.status(NOT_FOUND).json({ message: "Requested resource not found" })
+);
 
 app.use(errorHandler);
 
