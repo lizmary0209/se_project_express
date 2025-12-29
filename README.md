@@ -14,6 +14,8 @@ The ultimate goal is to provide a fully functional server for managing clothing 
 
 Ensure MongoDB is running locally at mongodb://127.0.0.1:27017/wtwr_db or update your connection string in app.js.
 
+No additional environment variables are required to run the server locally.
+
 ---
 
 ### Testing
@@ -50,7 +52,6 @@ project-root/
 ├── app.js # Main Express app setup
 ├── package.json # Project dependencies and scripts
 ├── .eslintrc.js # ESLint configuration (airbnb-base)
-├── .env # Environment variables (not committed)
 └── README.md # Project documentation
 
 ---
@@ -91,7 +92,7 @@ Development & Deployment Tools
 
 Nodemon for hot reload during development.
 
-dotenv for environment configuration.
+Configuration values (such as the JWT secret) are managed through a config file.
 
 Validator.js for validating user input (e.g., URLs).
 
