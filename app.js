@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 
 const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/users");
@@ -28,6 +29,8 @@ app.use("/items", itemsRouter);
 app.use((req, res, next) => {
   next(new NotFoundError("Requested resource not found"));
 });
+
+app.use(errors());
 
 app.use(errorHandler);
 
