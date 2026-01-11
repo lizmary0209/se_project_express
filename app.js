@@ -8,6 +8,7 @@ const usersRouter = require("./routes/users");
 const itemsRouter = require("./routes/clothingitems");
 const NotFoundError = require("./errors/not-found-err");
 const errorHandler = require("./middlewares/error-handler");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 
 
@@ -21,6 +22,8 @@ if (process.env.NODE_ENV !== "test") {
 app.use(cors());
 app.use(express.json());
 
+app.use(requestLogger);
+
 app.use("/", authRouter);
 app.use("/users", usersRouter);
 app.use("/items", itemsRouter);
@@ -29,6 +32,8 @@ app.use("/items", itemsRouter);
 app.use((req, res, next) => {
   next(new NotFoundError("Requested resource not found"));
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 
